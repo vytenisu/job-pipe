@@ -102,7 +102,7 @@ describe('Async pipe', () => {
     expect(fn3).toHaveBeenCalledTimes(1)
   })
 
-  it('cancels job if there is no waitlist', async () => {
+  it('cancels job if there is no queue allowed', async () => {
     const pipe = createPipe({throughput: 2, maxQueueSize: 0})
 
     let resolve: Resolve = () => {}
@@ -136,7 +136,7 @@ describe('Async pipe', () => {
     expect(fn3).not.toHaveBeenCalled()
   })
 
-  it('cancels older jobs if waitlist is not sufficient', async () => {
+  it('cancels older jobs if maximum queue size is not sufficient', async () => {
     const pipe = createPipe({throughput: 1, maxQueueSize: 1})
 
     let resolve: Resolve = () => {}
@@ -337,5 +337,26 @@ describe('Async pipe', () => {
 
     expect(error).toBeTruthy()
     expect(fn2).not.toHaveBeenCalled()
+  })
+
+  it('works with infinite values', () => {
+    const pipe = createPipe({throughput: 1, maxQueueSize: Infinity})
+
+    const promise1 = new Promise(() => {})
+    const promise2 = new Promise(() => {})
+    const promise3 = new Promise(() => {})
+    const promise4 = new Promise(() => {})
+
+    const fn1 = jest.fn(() => promise1)
+    const fn2 = jest.fn(() => promise2)
+    const fn3 = jest.fn(() => promise3)
+    const fn4 = jest.fn(() => promise4)
+
+    pipe(fn1)()
+    pipe(fn2)()
+    pipe(fn3)()
+    pipe(fn4)()
+
+    expect(pipe.getQueueLength()).toBe(3)
   })
 })
