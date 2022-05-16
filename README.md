@@ -107,3 +107,5 @@ try {
 ## Funky Visualization
 
 ![](pipe.png)
+
+Happy Hacking!
