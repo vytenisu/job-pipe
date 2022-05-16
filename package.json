@@ -1,7 +1,6 @@
 {
   "name": "job-pipe",
   "version": "1.0.0",
-  "private": true,
   "description": "Pipe wrapper limits parallel executions of asynchronous functions",
   "main": "dist/index.js",
   "scripts": {
