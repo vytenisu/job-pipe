@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES6",
     "lib": ["es2015", "es2017", "dom"],
     "sourceMap": true,
     "skipLibCheck": true,
     "noImplicitAny": true,
     "noImplicitUseStrict": true,
+    "esModuleInterop": true,
     "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./**/*.ts"],
-  "exclude": [
-    "**/*.test.ts",
-    "node_modules",
-    "cache",
-    "build"
-  ]
+  "exclude": ["**/*.test.ts", "node_modules", "cache", "build"]
 }

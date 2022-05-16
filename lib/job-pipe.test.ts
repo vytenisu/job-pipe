@@ -1,10 +1,23 @@
-import {createPipe, JobPipeQueueExceeded, JobPipeAborted} from './job-pipe'
+import {createPipe, JobPipeQueueExceeded, JobPipeAborted, JobPipeError} from './job-pipe'
+
+type Resolve = (value?: any) => void
+type Reject = (value?: any) => void
 
 describe('Async pipe', () => {
+  it('only accepts asynchronous jobs', async () => {
+    const pipe = createPipe()
+
+    const synchronousJobTest = async () => await pipe(() => 123)()
+    expect(synchronousJobTest).rejects.toThrow(JobPipeError)
+
+    const nonFunctionJob = () => pipe(123 as any)
+    expect(nonFunctionJob).toThrow(JobPipeError)
+  })
+
   it('executes a job', async () => {
     const pipe = createPipe()
 
-    let resolve
+    let resolve: Resolve = () => {}
 
     const promise = new Promise(r => (resolve = r))
     const fn = jest.fn()
@@ -62,7 +75,7 @@ describe('Async pipe', () => {
   it('delays job execution if pipe is not wide enough', async () => {
     const pipe = createPipe({throughput: 2})
 
-    let resolve
+    let resolve: Resolve = () => {}
 
     const promise1 = new Promise(r => (resolve = r))
     const promise2 = new Promise(() => {})
@@ -92,7 +105,7 @@ describe('Async pipe', () => {
   it('cancels job if there is no waitlist', async () => {
     const pipe = createPipe({throughput: 2, maxQueueSize: 0})
 
-    let resolve
+    let resolve: Resolve = () => {}
 
     const promise1 = new Promise(r => (resolve = r))
     const promise2 = new Promise(() => {})
@@ -126,7 +139,7 @@ describe('Async pipe', () => {
   it('cancels older jobs if waitlist is not sufficient', async () => {
     const pipe = createPipe({throughput: 1, maxQueueSize: 1})
 
-    let resolve
+    let resolve: Resolve = () => {}
 
     const promise1 = new Promise(r => (resolve = r))
     const promise2 = new Promise(() => {})
@@ -290,13 +303,13 @@ describe('Async pipe', () => {
   it('allows aborting pipe properly from a failed pipe job', async () => {
     const pipe = createPipe({throughput: 1, maxQueueSize: 1})
 
-    let reject
+    let reject: Reject = () => {}
 
     const promise1 = new Promise((_, rj) => {
       reject = rj
     })
 
-    let resolve
+    let resolve: Resolve = () => {}
 
     const promise2 = new Promise(rs => {
       resolve = rs

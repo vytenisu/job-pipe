@@ -45,9 +45,15 @@ export const createPipe = ({throughput = 1, maxQueueSize = 1} = {}) => {
       const promise = new Promise((resolve, rj) => {
         reject = rj
 
-        cb(...args)
-          .then((data: any) => resolve(data))
-          .catch((e: any) => rj(e))
+        const cbPromise = cb(...args)
+
+        if (!cbPromise.then) {
+          throw new JobPipeError(
+            'Job Pipe does not support non asynchronous functions. Piped functions are expected to return a Promise.',
+          )
+        }
+
+        cbPromise.then((data: any) => resolve(data)).catch((e: any) => rj(e))
       })
 
       const flowItem = {promise, reject}
@@ -115,6 +121,10 @@ export const createPipe = ({throughput = 1, maxQueueSize = 1} = {}) => {
   }
 
   function getPipedCb<T extends PipeCallback>(cb: T): T {
+    if (typeof cb !== 'function') {
+      throw new JobPipeError(`It is only possible to pipe functions. Provided ${typeof cb} instead.`)
+    }
+
     return ((...args: any[]) => push(cb, args)) as T
   }
 
@@ -134,7 +144,9 @@ export const createPipe = ({throughput = 1, maxQueueSize = 1} = {}) => {
 export const JOB_PIPE_ABORTED = 'JobPipeAborted'
 export const JOB_PIPE_QUEUE_EXCEEDED_ERROR = 'JobPipeQueueExceeded'
 
-export class JobPipeAborted extends Error {
+export class JobPipeError extends Error {}
+
+export class JobPipeAborted extends JobPipeError {
   constructor() {
     super()
     this.name = JOB_PIPE_ABORTED
@@ -142,7 +154,7 @@ export class JobPipeAborted extends Error {
   }
 }
 
-export class JobPipeQueueExceeded extends Error {
+export class JobPipeQueueExceeded extends JobPipeError {
   constructor() {
     super()
     this.name = JOB_PIPE_QUEUE_EXCEEDED_ERROR
