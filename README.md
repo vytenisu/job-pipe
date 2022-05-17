@@ -36,16 +36,20 @@ const promise2 = pipedFoo2() // Will wait for promise1 to resolve
 const promise3 = pipedFoo1()
 ```
 
+Piped functions accept same arguments and return same results as original ones (unless they are rejected due to configured pipe limitations as documented further in this readme).
+
 ---
 
 ## Custom Pipe
 
-Pipe can be customized by providing optional pipe properties to _createPipe_ ad object with keys:
+Pipe can be customized by providing optional pipe properties to _createPipe_ as object with keys:
 
 | Key          | Default value | Meaning                                                                                                                                                                                                                                                         |
 | ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | throughput   | 1             | Maximum amount of parallel executions                                                                                                                                                                                                                           |
 | maxQueueSize | 1             | Maximum amount of waiting jobs. If additional job is triggered when queue is full, oldest waiting job will be rejected with _JobPipeQueueExceeded_ exception and new job will be added to the end of queue. For unlimited queue use `{maxQueueSize: Infinity}`. |
+
+---
 
 **Example:**
 
@@ -76,6 +80,8 @@ pipe.getQueueLength()
 pipe.abort()
 ```
 
+---
+
 ## Thrown Exceptions
 
 | Exception Class      | Meaning                                                                                                               |
@@ -86,7 +92,7 @@ pipe.abort()
 
 ---
 
-Example of how aborted jobs can be ignored:
+**Example of how aborted jobs can be ignored:**
 
 ```javascript
 const pipe = createPipe()
